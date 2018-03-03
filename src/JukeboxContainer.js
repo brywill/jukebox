@@ -1,91 +1,58 @@
 import React, { Component } from "react";
+import SearchResults from "./SearchResults";
 
-var xhr;
+const api = 'http://billboard.modulo.site/search/song?q=';
+
 
 class JukeboxContainer extends Component {
-	constructor(props, context) {
-		super(props, context);
+	constructor(props) {
+		super(props);
 
 		this.state = {
-			song: [],
-			term: "",
-			count: -1,
+			songs: []
 		};
 
-		this.processRequest = this.processRequest.bind(this);
-		this.processResponse = this.processResponse.bind(this);
+		this.submitRequest = this.submitRequest.bind(this);
 	}
 
-	processRequest(e) {
-		this.setState({
-			term: this._inputElement.value.toLowerCase()
-		});
-		var url = "http://billboard.modulo.site/search/song?q=" + this.state.term;
-		xhr = new XMLHttpRequest();
-		xhr.addEventListener("readystatechange", this.processResponse, false);
-		xhr.open("GET", url, true);
-		xhr.send();
-		this._inputElement.value = "";
+	submitRequest(e) {
 		e.preventDefault();
-	}
+		var q = this._inputElement.value.toLowerCase();
 
-	processResponse() {
-		if (xhr.readyState === 4 && xhr.status === 200) {
-			var response = JSON.parse(xhr.responseText);
-			var songArray = [];
-			var wordArray = [];
+		fetch(api + q)
+			.then(response => response.json())
+			.then(data => {
+				console.log(data);
+				let songArray = [];
+				let wordArray = [];
 
-			for (var i = 0; i < response.length; i++) {
-				wordArray = response[i].song_name.toLowerCase().split(" ");
-				if (wordArray.includes(this.state.term)) {
-					songArray.push({
-						key: response[i].song_id,
-						title: response[i].song_name,
-						artist: response[i].display_artist
-					});
+				for (let i = 0; i < data.length; i++) {
+					wordArray = data[i].song_name.toLowerCase().split(" ");
+					if (wordArray.includes(q)) {
+						songArray.push({
+							key: data[i].song_id,
+							title: data[i].song_name,
+							artist: data[i].display_artist
+						});
+					}
+					wordArray = [];
 				}
-				wordArray = [];
-			}
-
-			this.setState({
-				song: songArray,
-				count: songArray.length
+				this.setState({ songs: songArray, count: songArray.length, term: q });
 			});
-		}
-	}
-
-	listResults(song) {
-		return <li key={song.key}>{song.title} - {song.artist}</li>
-	}
-
-	generateMsg() {
-		var count = this.state.count;
-		if (count === 0) {
-			return <h3>There are zero results for {this.state.term}</h3>;
-		} else if (count > 0) {
-			return <h3>There are {this.state.count} results for {this.state.term}</h3>; 
-		} else {
-			return;
-		}
+		this._inputElement.value = "";
 	}
 
 	render() {
-		var results = this.state.song;
-		var li = results.map(this.listResults);
-		var msg = this.generateMsg();
-
 		return (
 			<div>
-				<form onSubmit={this.processRequest}>
-					<input ref={(a) => this._inputElement = a} placeholder="enter" id="term"></input>
+				<form onSubmit={this.submitRequest}>
+					<input ref={(a) => this._inputElement = a} placeholder="enter"></input>
 			        <button type="submit">search</button>
 			    </form>
-			    {msg}
-				<ul>{li}</ul>
+			    <SearchResults searchcount={this.state.count} searchterm={this.state.term} songlist={this.state.songs} />
 			</div>
 		);
 	}
 }
-
 
 export default JukeboxContainer;
