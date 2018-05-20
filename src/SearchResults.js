@@ -3,12 +3,15 @@ import React, { Component } from "react";
 class SearchResults extends Component {
 	constructor(props) {
 		super(props);
+
+		this.state = { searched: false }
+
 		this.listResults = this.listResults.bind(this);
 		this.writeMsg = this.writeMsg.bind(this);
 	}
 
 	listResults(obj) {
-		return <tr key={obj.key}><td>{obj.title}</td><td>{obj.artist}</td></tr>
+		return <tr key={obj.key}><td>{obj.title}</td><td>{obj.artist}</td><td>{obj.playcount}</td></tr>
 	}
 
 	writeMsg(str, n) {
@@ -16,10 +19,10 @@ class SearchResults extends Component {
 	}
 
 	render() {
-		var results = this.props.songlist;
-		var tr = results.map(this.listResults);
 
 		if (this.props.searchterm) {
+			var results = this.props.songlist;
+			var tr = results.map(this.listResults);
 			var msg = this.writeMsg(this.props.searchterm, this.props.searchcount);
 		}
 
@@ -31,6 +34,7 @@ class SearchResults extends Component {
 						<tr>
 							<th>Song</th>
 							<th>Artist</th>
+							<th>Streams</th>
 						</tr>
 					</thead>
 					<tbody>

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import SearchResults from "./SearchResults";
 
-const api = 'http://billboard.modulo.site/search/song?q=';
+const api = 'http://ws.audioscrobbler.com/2.0/?method=track.search&limit=1000&api_key=f7a213cd9d971aafdf285b4885f18916&format=json&track=';
 
 
 class JukeboxContainer extends Component {
@@ -22,17 +22,18 @@ class JukeboxContainer extends Component {
 		fetch(api + q)
 			.then(response => response.json())
 			.then(data => {
-				console.log(data);
+				let tracks = data.results.trackmatches.track;
 				let songArray = [];
 				let wordArray = [];
 
-				for (let i = 0; i < data.length; i++) {
-					wordArray = data[i].song_name.toLowerCase().split(" ");
-					if (wordArray.includes(q)) {
+				for (let i = 0; i < tracks.length; i++) {
+					wordArray = tracks[i].name.toLowerCase().split(" ");
+					if (wordArray.includes(q) && tracks[i].listeners > 100000) {
 						songArray.push({
-							key: data[i].song_id,
-							title: data[i].song_name,
-							artist: data[i].display_artist
+							key: tracks[i].listeners,
+							title: tracks[i].name,
+							artist: tracks[i].artist,
+							playcount: tracks[i].listeners
 						});
 					}
 					wordArray = [];
